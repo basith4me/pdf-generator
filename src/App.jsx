@@ -1,12 +1,11 @@
 import "./App.css";
 import Form from "./components/Form";
+// import SimpleForm from "./components/SimpleForm";
 function App() {
-  // const [count, setCount] = useState(0);
-
   return (
     <>
-      {/* <h1>hi react developers</h1> */}
       <Form />
+      
     </>
   );
 }

@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import { useForm, Controller } from "react-hook-form";
 import Box from "@mui/material/Box";
 import TextField from "@mui/material/TextField";
@@ -7,6 +7,8 @@ import Grid from "@mui/material/Grid";
 import MenuItem from "@mui/material/MenuItem";
 import countries from "./utils/countries";
 import districts from "./utils/districts";
+import jsPDF from "jspdf";
+import "jspdf-autotable";
 
 const Form = () => {
   const {
@@ -16,6 +18,7 @@ const Form = () => {
     formState: { errors },
   } = useForm();
 
+  const [pdfUrl, setPdfUrl] = useState(null);
   const civilStatusOptions = [
     { value: "single", label: "Single" },
     { value: "married", label: "Married" },
@@ -35,6 +38,30 @@ const Form = () => {
   };
 
   const onSubmit = (data) => {
+    const document = new jsPDF();
+    document.autoTable({
+      head: [["Field", "Value"]],
+      body: [
+        ["Reference Number", data.refno],
+        ["Full Name", data.name],
+        ["Gender", data.gender],
+        ["Civil Status", data.civilStatus],
+        ["NIC number", data.nicNumber],
+        ["Passport Number", data.passportNo],
+        ["Date of Birth", data.dateOfBirth],
+        ["Age", data.age],
+        ["Applying Country", data.country],
+        ["Contact Number", data.mobileNo],
+        ["Address", data.addres],
+        ["Applying Job", data.job],
+        ["Police Division", data.policeDiv],
+        ["District", data.district],
+      ],
+    });
+
+    const pdfBlob = document.output("blob");
+    const pdfUrl = URL.createObjectURL(pdfBlob);
+    setPdfUrl(pdfUrl);
     console.log("Submitted Data:", data);
   };
 
@@ -192,7 +219,22 @@ const Form = () => {
                 />
               )}
             />
-
+            <Controller
+              name="address"
+              control={control}
+              defaultValue=""
+              rules={{ required: "This Field is required" }}
+              render={({ field }) => (
+                <TextField
+                  {...field}
+                  label="Address"
+                  fullWidth
+                  sx={{ mb: 2 }}
+                  error={Boolean(errors.address)}
+                  helperText={errors.address ? errors.address.message : ""}
+                />
+              )}
+            />
             <Grid container spacing={2}>
               <Grid item xs={6}>
                 <Controller
@@ -241,30 +283,6 @@ const Form = () => {
                 />
               </Grid>
             </Grid>
-
-            <Controller
-              name="country"
-              control={control}
-              defaultValue=""
-              rules={{ required: "This Field is required" }}
-              render={({ field }) => (
-                <TextField
-                  {...field}
-                  select
-                  label="Applying Country"
-                  fullWidth
-                  sx={{ mb: 2 }}
-                  error={Boolean(errors.country)}
-                  helperText={errors.country ? errors.country.message : ""}
-                >
-                  {countries.map((option) => (
-                    <MenuItem key={option.value} value={option.value}>
-                      {option.label}
-                    </MenuItem>
-                  ))}
-                </TextField>
-              )}
-            />
           </Box>
         </Grid>
         <Grid item xs={12} md={6}>
@@ -291,24 +309,45 @@ const Form = () => {
                 />
               )}
             />
-
             <Controller
-              name="address"
+              name="country"
               control={control}
               defaultValue=""
               rules={{ required: "This Field is required" }}
               render={({ field }) => (
                 <TextField
                   {...field}
-                  label="Address"
+                  select
+                  label="Applying Country"
                   fullWidth
                   sx={{ mb: 2 }}
-                  error={Boolean(errors.address)}
-                  helperText={errors.address ? errors.address.message : ""}
+                  error={Boolean(errors.country)}
+                  helperText={errors.country ? errors.country.message : ""}
+                >
+                  {countries.map((option) => (
+                    <MenuItem key={option.value} value={option.value}>
+                      {option.label}
+                    </MenuItem>
+                  ))}
+                </TextField>
+              )}
+            />
+            <Controller
+              name="job"
+              control={control}
+              defaultValue=""
+              rules={{ required: "This Field is required" }}
+              render={({ field }) => (
+                <TextField
+                  {...field}
+                  label="Applying Job"
+                  fullWidth
+                  sx={{ mb: 2 }}
+                  error={Boolean(errors.job)}
+                  helperText={errors.job ? errors.job.message : ""}
                 />
               )}
             />
-
             <Controller
               name="policeDiv"
               control={control}
@@ -360,6 +399,16 @@ const Form = () => {
             </Button>
           </Box>
         </Grid>
+        {pdfUrl && (
+          <Box mt={4}>
+            <iframe
+              src={pdfUrl}
+              width="100%"
+              height="600px"
+              title="PDF viewer"
+            ></iframe>
+          </Box>
+        )}
       </Grid>
     </Box>
   );
